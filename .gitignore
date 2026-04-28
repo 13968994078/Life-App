@@ -1,0 +1,24 @@
+# General
+.DS_Store
+Thumbs.db
+
+# Local tooling
+.m2/
+.idea/
+.vscode/
+
+# Backend
+backend/target/
+backend/*.log
+backend/.git.backend-backup/
+
+# Frontend
+frontend/node_modules/
+frontend/unpackage/
+frontend/.hbuilderx/
+frontend/project.private.config.json
+
+# Env and local overrides
+.env
+.env.*
+!.env.example

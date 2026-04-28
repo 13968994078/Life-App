@@ -1,0 +1,32 @@
+{
+    "name" : "奇幻妙妙屋",
+    "appid" : "__UNI__97B5998",
+    "description" : "奇幻妙妙屋 MVP",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "vueVersion" : "3",
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "distribute" : {
+            "android" : {
+                "permissions" : [ "<uses-permission android:name=\"android.permission.INTERNET\" />" ]
+            },
+            "ios" : {}
+        }
+    },
+    "h5" : {
+        "title" : "奇幻妙妙屋"
+    },
+    "mp-weixin" : {
+        "appid" : "wx50ce442ff8b82094"
+    }
+}

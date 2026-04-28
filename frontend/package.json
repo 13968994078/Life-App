@@ -1,0 +1,10 @@
+{
+  "name": "life-app-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "uni-app frontend for 奇幻妙妙屋",
+  "scripts": {
+    "dev:h5": "uni",
+    "build:h5": "uni build -p h5"
+  }
+}

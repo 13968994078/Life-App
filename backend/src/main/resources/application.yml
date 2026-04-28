@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: life-app-backend
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+app:
+  auth:
+    jwt-secret: ${JWT_SECRET}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
