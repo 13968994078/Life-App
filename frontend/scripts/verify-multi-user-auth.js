@@ -15,6 +15,8 @@ function main() {
   const checkinApi = read('api/checkin.js')
   const loginPage = read('pages/login/index.vue')
   const minePage = read('pages/mine/index.vue')
+  const profilePage = read('pages/mine/profile.vue')
+  const passwordPage = read('pages/mine/password.vue')
   const checkinPage = read('pages/checkin/index.vue')
 
   ;[
@@ -31,14 +33,25 @@ function main() {
   ].forEach((marker) => assertIncludes(loginPage, marker, 'frontend/pages/login/index.vue'))
 
   ;[
-    'account-value',
-    'password-sheet',
-    'password-form'
+    '/pages/mine/profile'
   ].forEach((marker) => assertIncludes(minePage, marker, 'frontend/pages/mine/index.vue'))
+
+  ;[
+    'account-value',
+    'profile-avatar-options'
+  ].forEach((marker) => assertIncludes(profilePage, marker, 'frontend/pages/mine/profile.vue'))
+
+  ;[
+    'password-sheet',
+    'password-form',
+    'changePassword'
+  ].forEach((marker) => assertIncludes(passwordPage, marker, 'frontend/pages/mine/password.vue'))
 
   ;[
     'public-board-card',
     'board-row',
+    'board-avatar-wrap',
+    'boardAvatarLetter',
     'self-badge'
   ].forEach((marker) => assertIncludes(checkinPage, marker, 'frontend/pages/checkin/index.vue'))
 

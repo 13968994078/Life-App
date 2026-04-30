@@ -1,94 +1,93 @@
 <template>
-  <view class="page">
-    <view class="card dawn-banner stage-card">
-      <view class="banner-row">
-        <view class="banner-mark">AM</view>
-        <view class="banner-note">Morning Ledger</view>
-      </view>
-      <view class="banner-title">起床签到</view>
-      <view class="banner-subtitle">按下今天的开始键，把连续早起一点点攒出来。签到不只是记录时间，更是看见你的节奏有没有开始稳定下来。</view>
-      <view class="banner-strip">
-        <view class="banner-metric">
-          <view class="banner-metric-label">目标起床</view>
-          <view class="banner-metric-value">{{ setting.wakeTargetTime || '--:--' }}</view>
+  <view class="page checkin-page">
+    <view class="card checkin-hero status-hero">
+      <view class="hero-topline">
+        <view class="section-label">
+          <brand-icon :name="today ? (today.status === 'ON_TIME' ? 'success' : 'warning') : 'time'" :size="24" />
+          <text>签到页</text>
         </view>
-        <view class="banner-metric">
-          <view class="banner-metric-label">连续签到</view>
-          <view class="banner-metric-value">{{ statistics.streakDays || 0 }} 天</view>
+        <view class="hero-badge" :class="today ? (today.status === 'ON_TIME' ? 'ok' : 'late') : 'idle'">{{ today ? (today.status === 'ON_TIME' ? '已准时' : '已签到') : '待签到' }}</view>
+      </view>
+      <view class="hero-title">{{ content.title }}</view>
+      <view class="hero-subtitle">{{ content.subtitle }}</view>
+      <view class="hero-strip">
+        <view class="hero-strip-item">
+          <view class="hero-strip-label">目标时间</view>
+          <view class="hero-strip-value">{{ setting.wakeTargetTime || '--:--' }}</view>
+        </view>
+        <view class="hero-strip-item">
+          <view class="hero-strip-label">连续</view>
+          <view class="hero-strip-value">{{ statistics.streakDays || 0 }} 天</view>
         </view>
       </view>
     </view>
 
     <view class="card status-card">
-      <view class="editorial-kicker card-kicker">
-        <brand-icon name="checkin" :size="26" />
-        Today
+      <view class="section-title">{{ today ? '今天已签到' : '今天还没签到' }}</view>
+      <view class="section-subtext">{{ statusText }}</view>
+      <view class="status-inline">
+        <view class="soft-chip">目标时间 {{ setting.wakeTargetTime || '--:--' }}</view>
+        <view class="soft-chip">累计 {{ statistics.totalDays || 0 }} 天</view>
       </view>
-      <view class="section-title section-no-margin">今日签到</view>
-      <view class="status-text">{{ statusText }}</view>
-      <view class="status-subtext">目标起床时间：{{ setting.wakeTargetTime || '--:--' }}</view>
-      <view class="primary-btn" @tap="handleCheckIn">{{ today ? '今日已签到' : '立即签到' }}</view>
+      <view class="primary-btn" @tap="handleCheckIn">{{ today ? '今天已签到' : '立即签到' }}</view>
     </view>
 
     <view class="card stats-card">
-      <view class="editorial-kicker card-kicker">
-        <brand-icon name="stats" :size="26" />
-        Habit Score
+      <view class="section-label">
+        <brand-icon name="stats" :size="24" />
+        <text>清晨统计</text>
       </view>
-      <view class="section-title section-no-margin">签到统计</view>
-      <view class="section-subtext stats-tip">越稳定，连续天数越漂亮。</view>
-      <view class="stat-row">
+      <view class="section-title stats-title">连续和累计，像页脚的小数字</view>
+      <view class="stats-grid">
         <view class="stat-box">
-          <brand-icon name="stats" class="stat-icon" :size="62" />
           <view class="stat-value">{{ statistics.streakDays || 0 }}</view>
-          <view class="stat-label">连续天数</view>
+          <view class="stat-label">连续签到</view>
         </view>
         <view class="stat-box">
-          <brand-icon name="calendar" class="stat-icon" :size="62" />
           <view class="stat-value">{{ statistics.totalDays || 0 }}</view>
-          <view class="stat-label">累计天数</view>
+          <view class="stat-label">累计签到</view>
         </view>
       </view>
     </view>
 
-    <view class="card history-card public-board-card">
-      <view class="editorial-kicker card-kicker">
-        <brand-icon name="board" :size="26" />
-        Public Board
+    <view class="card board-card public-board-card">
+      <view class="section-label">
+        <brand-icon name="board" :size="24" />
+        <text>龙虎榜</text>
       </view>
-      <view class="section-title section-no-margin">公开签到榜</view>
-      <view class="section-subtext stats-tip">这里能看到其他用户今天有没有签到，以及谁最近更稳定。</view>
+      <view class="section-title board-title">签到龙虎榜</view>
       <view v-for="(item, index) in publicBoard" :key="item.userId" class="board-row">
         <view class="board-rank">{{ index + 1 }}</view>
+        <view class="board-avatar-wrap">
+          <image v-if="item.avatar" class="board-avatar-image" :src="item.avatar" mode="aspectFill" />
+          <view v-else class="board-avatar-fallback">{{ boardAvatarLetter(item) }}</view>
+        </view>
         <view class="board-main">
-          <view class="board-title-line">
+          <view class="board-name-row">
             <view class="board-name">{{ item.nickname || item.username }}</view>
             <view v-if="item.userId === currentUserId" class="self-badge">我</view>
           </view>
-          <view class="board-meta">@{{ item.username }} · 连续 {{ item.streakDays || 0 }} 天 · 累计 {{ item.totalDays || 0 }} 天</view>
-          <view class="board-submeta">{{ boardSubmeta(item) }}</view>
+          <view class="board-meta">连续 {{ item.streakDays || 0 }} 天 · 累计 {{ item.totalDays || 0 }} 天</view>
+          <view class="board-meta muted">{{ boardSubmeta(item) }}</view>
         </view>
-        <view class="board-status" :class="item.todayStatus === 'ON_TIME' ? 'ok' : item.todayStatus === 'LATE' ? 'late' : 'idle'">
-          {{ boardStatusText(item) }}
-        </view>
+        <view class="board-status" :class="item.todayStatus === 'ON_TIME' ? 'ok' : item.todayStatus === 'LATE' ? 'late' : 'idle'">{{ boardStatusText(item) }}</view>
       </view>
-      <view v-if="!publicBoard.length" class="empty-text">还没有可展示的公开签到数据</view>
+      <view v-if="!publicBoard.length" class="empty-text">还没有公开签到数据。</view>
     </view>
 
-    <view class="card history-card calendar-card">
+    <view class="card calendar-card">
       <view class="calendar-head">
         <view>
-          <view class="editorial-kicker card-kicker">
-            <brand-icon name="calendar" :size="26" />
-            Monthly View
+          <view class="section-label">
+            <brand-icon name="calendar" :size="24" />
+            <text>本月版面</text>
           </view>
-          <view class="section-title section-no-margin">签到月历</view>
-          <view class="section-subtext stats-tip">一眼看清本月哪几天准时，哪几天迟到了。</view>
+          <view class="section-title calendar-title">签到日历</view>
         </view>
         <view class="month-switch">
-          <view class="month-btn" @tap="changeMonth(-1)"><</view>
+          <view class="month-btn" @tap="changeMonth(-1)">&lt;</view>
           <view class="month-text">{{ monthTitle }}</view>
-          <view class="month-btn" @tap="changeMonth(1)">></view>
+          <view class="month-btn" @tap="changeMonth(1)">&gt;</view>
         </view>
       </view>
       <view class="weekday-row">
@@ -99,12 +98,7 @@
           v-for="item in calendarGrid"
           :key="item.key"
           class="calendar-cell"
-          :class="{
-            muted: !item.currentMonth,
-            today: item.isToday,
-            checked: item.checked,
-            lateCell: item.status === 'LATE'
-          }"
+          :class="{ mutedCell: !item.currentMonth, todayCell: item.isToday, checked: item.checked, lateCell: item.status === 'LATE' }"
         >
           <view class="calendar-day">{{ item.day }}</view>
           <view v-if="item.checked" class="calendar-mark">{{ item.status === 'ON_TIME' ? '准' : '迟' }}</view>
@@ -112,23 +106,20 @@
       </view>
     </view>
 
-    <view class="card history-card record-card">
-      <view class="editorial-kicker card-kicker">
-        <brand-icon name="history" :size="26" />
-        Record List
+    <view class="card record-card">
+      <view class="section-label">
+        <brand-icon name="time" :size="24" />
+        <text>清晨记录</text>
       </view>
-      <view class="section-title section-no-margin">本月记录</view>
-      <view class="section-subtext stats-tip">准时和迟到都记录下来，方便你看趋势。</view>
-      <view v-for="item in calendar" :key="item.id" class="history-row">
+      <view class="section-title record-title">这一月的起床记录</view>
+      <view v-for="item in calendar" :key="item.id" class="record-row">
         <view>
-          <view class="history-date">{{ item.checkDate }}</view>
-          <view class="history-time">{{ formatDateTime(item.checkTime) }}</view>
+          <view class="record-date">{{ item.checkDate }}</view>
+          <view class="record-time">{{ formatDateTime(item.checkTime) }}</view>
         </view>
-        <view class="history-status" :class="item.status === 'ON_TIME' ? 'ok' : 'late'">
-          {{ item.status === 'ON_TIME' ? '准时' : '迟到' }}
-        </view>
+        <view class="record-status" :class="item.status === 'ON_TIME' ? 'ok' : 'late'">{{ item.status === 'ON_TIME' ? '准时' : '迟到' }}</view>
       </view>
-      <view v-if="!calendar.length" class="empty-text">本月还没有签到记录</view>
+      <view v-if="!calendar.length" class="empty-text">{{ content.emptyTip }}</view>
     </view>
   </view>
 </template>
@@ -136,8 +127,17 @@
 <script>
 import BrandIcon from '../../components/brand-icon.vue'
 import { doCheckin, getCheckinCalendar, getCheckinStatistics, getPublicCheckinBoard, getTodayCheckin } from '../../api/checkin'
+import { getHomeContent } from '../../api/content'
 import { getSettings } from '../../api/settings'
 import { getAuthUser, getToken } from '../../utils/auth'
+
+function createDefaultCheckinContent() {
+  return {
+    title: '把清晨留一笔',
+    subtitle: '起床时间写下来，作息会慢慢露出自己的样子。',
+    emptyTip: '这个月还没有记录，第一次签到会从这里开始。'
+  }
+}
 
 export default {
   components: {
@@ -152,15 +152,16 @@ export default {
       publicBoard: [],
       currentYear: 0,
       currentMonth: 0,
-      weekdayLabels: ['日', '一', '二', '三', '四', '五', '六']
+      weekdayLabels: ['日', '一', '二', '三', '四', '五', '六'],
+      content: createDefaultCheckinContent()
     }
   },
   computed: {
     statusText() {
       if (!this.today) {
-        return '今天还没有签到'
+        return '今天还没落笔，签到后会留下时间和状态。'
       }
-      return `已签到：${this.formatDateTime(this.today.checkTime)} · ${this.today.status === 'ON_TIME' ? '准时' : '迟到'}`
+      return `写于 ${this.formatDateTime(this.today.checkTime)} · ${this.today.status === 'ON_TIME' ? '准时' : '迟到'}`
     },
     monthTitle() {
       return `${this.currentYear}年${this.currentMonth}月`
@@ -240,18 +241,21 @@ export default {
       return false
     },
     async loadData() {
-      const [today, statistics, setting, calendar, publicBoard] = await Promise.all([
+      const contentPromise = getHomeContent().then((data) => data.checkinHero || createDefaultCheckinContent()).catch(() => createDefaultCheckinContent())
+      const [today, statistics, setting, calendar, publicBoard, content] = await Promise.all([
         getTodayCheckin(),
         getCheckinStatistics(),
         getSettings(),
         getCheckinCalendar(this.currentYear, this.currentMonth),
-        getPublicCheckinBoard()
+        getPublicCheckinBoard(),
+        contentPromise
       ])
       this.today = today
       this.statistics = statistics
       this.setting = setting
       this.calendar = calendar
       this.publicBoard = publicBoard || []
+      this.content = content
     },
     async handleCheckIn() {
       if (this.today) {
@@ -280,9 +284,13 @@ export default {
     },
     boardSubmeta(item) {
       if (!item || !item.todayChecked || !item.todayCheckTime) {
-        return '今天暂未签到'
+        return '今天还没签到'
       }
       return `今天 ${this.formatDateTime(item.todayCheckTime)}`
+    },
+    boardAvatarLetter(item) {
+      const name = item && (item.nickname || item.username) ? `${item.nickname || item.username}`.trim() : ''
+      return name ? name.charAt(0).toUpperCase() : 'L'
     },
     async changeMonth(offset) {
       let year = this.currentYear
@@ -304,176 +312,196 @@ export default {
 </script>
 
 <style scoped>
-.dawn-banner {
-  margin-bottom: 24rpx;
-  background:
-    radial-gradient(circle at top right, rgba(255, 245, 233, 0.28), transparent 24%),
-    linear-gradient(135deg, #5b445c, #a85b3f 54%, #efc07d);
-  color: #fffdfb;
+.checkin-hero {
+  background: linear-gradient(135deg, #4d3a50, #7a5976 48%, #d49b69);
+  color: #fffaf4;
 }
 
-.banner-row {
+.hero-topline,
+.calendar-head,
+.board-name-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
 }
 
-.banner-mark {
-  display: inline-flex;
+.hero-badge,
+.board-status,
+.record-status {
   padding: 10rpx 18rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.16);
   font-size: 22rpx;
-  margin-bottom: 18rpx;
+  font-weight: 700;
 }
 
-.banner-note {
-  font-size: 22rpx;
-  line-height: 1.6;
-  color: rgba(255, 248, 241, 0.82);
+.hero-badge.ok,
+.board-status.ok,
+.record-status.ok {
+  color: #487436;
+  background: rgba(232, 247, 228, 0.94);
 }
 
-.banner-title {
+.hero-badge.late,
+.board-status.late,
+.record-status.late {
+  color: #95542e;
+  background: rgba(255, 237, 214, 0.94);
+}
+
+.hero-badge.idle,
+.board-status.idle {
+  color: #7f748d;
+  background: rgba(255, 248, 241, 0.18);
+}
+
+.hero-title {
+  margin-top: 18rpx;
   font-size: 48rpx;
+  line-height: 1.24;
   font-weight: 700;
   font-family: 'Iowan Old Style', 'Songti SC', 'Noto Serif SC', serif;
 }
 
-.banner-subtitle {
+.hero-subtitle {
   margin-top: 14rpx;
   font-size: 26rpx;
-  line-height: 1.78;
-  opacity: 0.94;
+  line-height: 1.74;
+  color: rgba(255, 247, 239, 0.9);
 }
 
-.banner-strip {
+.hero-strip,
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
-  margin-top: 26rpx;
 }
 
-.banner-metric {
-  padding: 18rpx 18rpx 20rpx;
-  border-radius: 22rpx;
-  background: rgba(255, 249, 241, 0.14);
-  border: 1rpx solid rgba(255, 248, 240, 0.16);
-}
-
-.banner-metric-label {
-  font-size: 20rpx;
-  letter-spacing: 2rpx;
-  color: rgba(255, 246, 237, 0.76);
-}
-
-.banner-metric-value {
-  margin-top: 10rpx;
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #fff8f1;
-}
-
-.status-card {
-  margin-bottom: 24rpx;
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(248, 241, 255, 0.94));
-}
-
-.section-no-margin {
-  margin-bottom: 0;
-}
-
-.card-kicker {
-  margin-bottom: 14rpx;
-}
-
-.status-text {
-  margin: 16rpx 0 12rpx;
-  color: #4f4965;
-  font-size: 30rpx;
-  font-weight: 600;
-}
-
-.status-subtext {
-  margin-bottom: 24rpx;
-  color: #8a82a0;
-}
-
-.stats-card {
-  background: linear-gradient(180deg, rgba(255, 251, 247, 0.98), rgba(246, 241, 255, 0.96));
-}
-
-.stats-tip {
-  margin-top: 10rpx;
-  margin-bottom: 20rpx;
-}
-
-.stat-row {
-  display: flex;
-  gap: 24rpx;
-}
-
-.stat-box {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 24rpx;
-  padding: 28rpx;
-  text-align: center;
-  box-shadow: inset 0 0 0 1rpx rgba(124, 155, 255, 0.1);
-}
-
-.stat-icon {
-  margin: 0 auto 16rpx;
-}
-
-.stat-value {
-  font-size: 44rpx;
-  font-weight: 700;
-  color: #1d3557;
-}
-
-.stat-label {
-  margin-top: 8rpx;
-  color: #7e8799;
-}
-
-.history-card {
+.hero-strip {
   margin-top: 24rpx;
 }
 
-.public-board-card {
-  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(245, 240, 255, 0.96));
+.hero-strip-item {
+  padding: 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 248, 241, 0.14);
 }
 
+.hero-strip-label {
+  font-size: 22rpx;
+  color: rgba(255, 245, 237, 0.82);
+}
+
+.hero-strip-value {
+  margin-top: 10rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.status-card,
+.stats-card,
+.board-card,
 .calendar-card,
 .record-card {
-  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(247, 244, 255, 0.96));
+  margin-top: 24rpx;
 }
 
-.board-row {
+.status-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin: 20rpx 0 24rpx;
+}
+
+.stats-title,
+.board-title,
+.calendar-title,
+.record-title {
+  margin-top: 16rpx;
+}
+
+.stats-grid {
+  margin-top: 22rpx;
+}
+
+.stat-box {
+  padding: 26rpx 20rpx;
+  border-radius: 24rpx;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(249, 244, 255, 0.94));
+}
+
+.stat-value {
+  color: #2f2944;
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.stat-label,
+.board-meta,
+.record-time,
+.month-text,
+.weekday-cell {
+  color: #857c92;
+  font-size: 22rpx;
+}
+
+.board-row,
+.record-row {
   display: flex;
   align-items: center;
   gap: 18rpx;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid rgba(93, 109, 170, 0.12);
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid rgba(113, 103, 133, 0.12);
 }
 
-.board-row:last-of-type {
+.board-row:last-child,
+.record-row:last-child {
   border-bottom: 0;
 }
 
 .board-rank {
-  width: 54rpx;
-  height: 54rpx;
-  flex-shrink: 0;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 18rpx;
-  background: rgba(124, 155, 255, 0.12);
-  color: #5f6fd7;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24rpx;
+  background: rgba(124, 155, 255, 0.12);
+  color: #5f6fd7;
   font-weight: 700;
+}
+
+.board-avatar-wrap {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+  padding: 6rpx;
+  background: rgba(255, 248, 241, 0.82);
+  border: 1rpx solid rgba(124, 155, 255, 0.14);
+}
+
+.board-avatar-image,
+.board-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 16rpx;
+}
+
+.board-avatar-image {
+  display: block;
+  background: #f5e7da;
+}
+
+.board-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 800;
+  background: linear-gradient(135deg, #7c6fd7, #f28c45);
 }
 
 .board-main {
@@ -481,20 +509,15 @@ export default {
   min-width: 0;
 }
 
-.board-title-line {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.board-name {
-  color: #3f3a55;
-  font-size: 30rpx;
+.board-name,
+.record-date {
+  color: #332d44;
+  font-size: 28rpx;
   font-weight: 700;
 }
 
 .self-badge {
-  padding: 6rpx 14rpx;
+  padding: 6rpx 12rpx;
   border-radius: 999rpx;
   background: rgba(242, 140, 69, 0.16);
   color: #b35c32;
@@ -502,176 +525,84 @@ export default {
   font-weight: 700;
 }
 
-.board-meta,
-.board-submeta {
-  color: #8d87a0;
-  font-size: 22rpx;
-  line-height: 1.6;
-}
-
-.board-meta {
-  margin-top: 8rpx;
-}
-
-.board-submeta {
+.muted {
   margin-top: 4rpx;
-}
-
-.board-status {
-  min-width: 112rpx;
-  text-align: center;
-  border-radius: 999rpx;
-  padding: 10rpx 18rpx;
-  font-size: 24rpx;
-}
-
-.idle {
-  color: #8f8aa2;
-  background: rgba(141, 135, 160, 0.12);
-}
-
-.calendar-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16rpx;
 }
 
 .month-switch {
   display: flex;
   align-items: center;
   gap: 10rpx;
-  padding-top: 6rpx;
 }
 
 .month-btn {
-  width: 52rpx;
-  height: 52rpx;
+  width: 50rpx;
+  height: 50rpx;
   border-radius: 16rpx;
-  background: rgba(124, 155, 255, 0.12);
-  color: #566cd9;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(124, 155, 255, 0.12);
+  color: #566cd9;
   font-weight: 700;
 }
 
-.month-text {
-  min-width: 120rpx;
-  text-align: center;
-  font-size: 24rpx;
-  color: #5a6078;
-  font-weight: 600;
-}
-
-.weekday-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10rpx;
-  margin: 18rpx 0 10rpx;
-}
-
-.weekday-cell {
-  text-align: center;
-  font-size: 22rpx;
-  color: #8d87a0;
-}
-
+.weekday-row,
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 10rpx;
 }
 
+.weekday-row {
+  margin: 20rpx 0 12rpx;
+}
+
 .calendar-cell {
-  min-height: 108rpx;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1rpx solid rgba(124, 155, 255, 0.08);
-  padding: 14rpx 10rpx;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  min-height: 86rpx;
+  padding: 14rpx 8rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.mutedCell {
+  opacity: 0.42;
+}
+
+.todayCell {
+  box-shadow: inset 0 0 0 2rpx rgba(242, 140, 69, 0.38);
+}
+
+.checked {
+  background: rgba(231, 246, 228, 0.8);
+}
+
+.lateCell {
+  background: rgba(255, 237, 214, 0.82);
 }
 
 .calendar-day {
+  color: #40374f;
   font-size: 24rpx;
-  color: #4d4c63;
   font-weight: 600;
 }
 
 .calendar-mark {
-  align-self: flex-start;
-  padding: 6rpx 12rpx;
-  border-radius: 999rpx;
-  background: #eaf7ef;
-  color: #2e8b57;
+  margin-top: 10rpx;
+  color: #7f695a;
   font-size: 20rpx;
-  font-weight: 700;
 }
 
-.muted {
-  opacity: 0.45;
-}
+@media screen and (max-width: 380px) {
+  .hero-strip,
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 
-.today {
-  box-shadow: inset 0 0 0 2rpx rgba(92, 124, 250, 0.18);
-}
-
-.checked {
-  background: linear-gradient(180deg, #f9fbff, #eef4ff);
-}
-
-.lateCell .calendar-mark {
-  background: #fff4e5;
-  color: #c57a1c;
-}
-
-.history-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid rgba(93, 109, 170, 0.12);
-}
-
-.history-row:last-child {
-  border-bottom: 0;
-}
-
-.history-date {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #3f3a55;
-}
-
-.history-time {
-  margin-top: 6rpx;
-  color: #8d87a0;
-  font-size: 24rpx;
-}
-
-.history-status {
-  min-width: 96rpx;
-  text-align: center;
-  border-radius: 999rpx;
-  padding: 8rpx 18rpx;
-  font-size: 24rpx;
-}
-
-.ok {
-  color: #2e8b57;
-  background: #eaf7ef;
-}
-
-.late {
-  color: #c57a1c;
-  background: #fff4e5;
-}
-
-.empty-text {
-  color: #9aa3b2;
-  text-align: center;
-  padding: 24rpx 0 8rpx;
+  .calendar-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>

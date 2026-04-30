@@ -18,7 +18,10 @@ function main() {
   const foodHistory = read('pages/food/history.vue')
   const checkin = read('pages/checkin/index.vue')
   const mine = read('pages/mine/index.vue')
+  const profile = read('pages/mine/profile.vue')
   const login = read('pages/login/index.vue')
+  const password = read('pages/mine/password.vue')
+  const brandIcon = read('components/brand-icon.vue')
 
   ;[
     '$paper-ivory',
@@ -29,24 +32,26 @@ function main() {
   ].forEach((marker) => assertIncludes(uni, marker, 'uni.scss'))
 
   ;[
-    '.page::before',
-    '.page::after',
-    '.editorial-kicker',
-    '.editorial-link'
+    '.section-label',
+    '.primary-btn',
+    '.picker-surface',
+    '.empty-text'
   ].forEach((marker) => assertIncludes(app, marker, 'App.vue'))
 
   ;[
-    'hero-kicker',
-    'hero-side-note',
-    'feature-lead-grid',
-    'editorial-nav-card'
+    'quote-card',
+    'summary-strip',
+    'action-grid',
+    'recent-card'
   ].forEach((marker) => assertIncludes(index, marker, 'pages/index/index.vue'))
 
   ;[
-    'stage-card',
-    'filter-strip',
-    'editorial-form-card',
-    'editorial-list-card'
+    'food-hero',
+    'food-layout-card',
+    'food-creator',
+    'creatorAvatarUrl',
+    'form-actions',
+    'history-dot'
   ].forEach((marker) => assertIncludes(food, marker, 'pages/food/index.vue'))
 
   ;[
@@ -56,22 +61,71 @@ function main() {
   ].forEach((marker) => assertIncludes(foodHistory, marker, 'pages/food/history.vue'))
 
   ;[
-    'stage-card',
+    'status-hero',
+    'board-card',
+    'public-board-card',
+    'board-avatar-wrap',
+    'boardAvatarLetter',
     'calendar-card',
     'record-card'
   ].forEach((marker) => assertIncludes(checkin, marker, 'pages/checkin/index.vue'))
 
   ;[
-    'account-stage',
-    'identity-card',
-    'settings-sheet'
+    'profile-hero',
+    'management-list',
+    'setting-card'
   ].forEach((marker) => assertIncludes(mine, marker, 'pages/mine/index.vue'))
+
+  ;[
+    'profile-page',
+    'profile-color-refresh',
+    'profile-hero',
+    'profile-card',
+    'profile-head',
+    'profile-avatar-options',
+    'name="profile"',
+    'name="petal"',
+    'form-label-with-icon',
+    'avatar-wheat.png',
+    'avatar-clock.png',
+    'avatar-rice.png'
+  ].forEach((marker) => assertIncludes(profile, marker, 'pages/mine/profile.vue'))
 
   ;[
     'login-stage',
     'credential-card',
-    'demo-pill'
+    'demo-pill',
+    "'quote'",
+    "'profile'",
+    "'key'"
   ].forEach((marker) => assertIncludes(login, marker, 'pages/login/index.vue'))
+
+  ;[
+    'name="warning"',
+    'name="save"',
+    'name="success"',
+    'form-label-with-icon'
+  ].forEach((marker) => assertIncludes(password, marker, 'pages/mine/password.vue'))
+
+  ;[
+    'quoteActive',
+    'notificationActive',
+    'targetActive',
+    'profileActive',
+    'teaActive',
+    'petalActive'
+  ].forEach((marker) => assertIncludes(brandIcon, marker, 'components/brand-icon.vue'))
+
+  ;[
+    'name="quote"',
+    'name="tea"',
+    'name="empty"',
+    'name="time"',
+    'name="target"',
+    'name="notification"',
+    'name="profile"',
+    'name="petal"'
+  ].forEach((marker) => assertIncludes(index + food + checkin + mine, marker, 'icon usage'))
 
   console.log('ui refresh verification passed')
 }

@@ -4,6 +4,7 @@ import com.lifeapp.dto.ChangePasswordRequest;
 import com.lifeapp.common.ApiResponse;
 import com.lifeapp.dto.LoginRequest;
 import com.lifeapp.dto.RegisterRequest;
+import com.lifeapp.dto.UpdateProfileRequest;
 import com.lifeapp.service.AuthService;
 import com.lifeapp.vo.LoginResponse;
 import com.lifeapp.vo.UserProfile;
@@ -55,5 +56,10 @@ public class AuthController {
             return ApiResponse.fail("用户不存在");
         }
         return ApiResponse.ok(profile);
+    }
+
+    @PutMapping("/profile")
+    public ApiResponse<UserProfile> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        return ApiResponse.ok(authService.updateProfile(request));
     }
 }

@@ -9,6 +9,7 @@ import com.lifeapp.common.UnauthorizedException;
 import com.lifeapp.dto.ChangePasswordRequest;
 import com.lifeapp.dto.LoginRequest;
 import com.lifeapp.dto.RegisterRequest;
+import com.lifeapp.dto.UpdateProfileRequest;
 import com.lifeapp.mapper.UserInfoMapper;
 import com.lifeapp.model.UserInfo;
 import com.lifeapp.service.AuthService;
@@ -86,6 +87,16 @@ public class AuthServiceImpl implements AuthService {
         return toProfile(currentUserEntity());
     }
 
+    @Override
+    public UserProfile updateProfile(UpdateProfileRequest request) {
+        UserInfo user = currentUserEntity();
+        user.setNickname(request.getNickname().trim());
+        user.setAvatar(normalizeOptionalText(request.getAvatar()));
+        user.setUpdatedAt(LocalDateTime.now());
+        userInfoMapper.updateById(user);
+        return toProfile(user);
+    }
+
     private LoginResponse toLoginResponse(UserInfo user) {
         LoginResponse response = new LoginResponse();
         response.setToken(jwtUtil.generateToken(user.getId(), user.getNickname()));
@@ -133,5 +144,12 @@ public class AuthServiceImpl implements AuthService {
 
     private String normalizeUsername(String username) {
         return username == null ? null : username.trim();
+    }
+
+    private String normalizeOptionalText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
     }
 }

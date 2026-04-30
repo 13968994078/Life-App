@@ -7,6 +7,7 @@ import com.lifeapp.dto.UpdateFoodRequest;
 import com.lifeapp.model.Food;
 import com.lifeapp.model.FoodDrawRecord;
 import com.lifeapp.service.FoodService;
+import com.lifeapp.vo.FoodListItem;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,8 +34,8 @@ public class FoodController {
     }
 
     @GetMapping("/list")
-    public ApiResponse<List<Food>> list(@RequestParam(required = false) String category,
-                                        @RequestParam(required = false) String poolView) {
+    public ApiResponse<List<FoodListItem>> list(@RequestParam(required = false) String category,
+                                                @RequestParam(required = false) String poolView) {
         return ApiResponse.ok(foodService.list(category, poolView));
     }
 

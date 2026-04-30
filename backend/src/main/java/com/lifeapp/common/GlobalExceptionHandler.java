@@ -26,6 +26,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<Void> handleValidation(MethodArgumentNotValidException exception) {
         String message = exception.getBindingResult().getFieldErrors().isEmpty()
                 ? "请求参数不合法"
@@ -34,6 +35,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<Void> handleBind(BindException exception) {
         String message = exception.getBindingResult().getFieldErrors().isEmpty()
                 ? "请求参数不合法"

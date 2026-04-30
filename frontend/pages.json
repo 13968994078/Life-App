@@ -1,6 +1,12 @@
 {
   "pages": [
     {
+	   "path": "pages/login/index",
+	   "style": {
+	     "navigationBarTitleText": "登录"
+	   }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "奇幻妙妙屋"
@@ -9,7 +15,7 @@
     {
       "path": "pages/food/index",
       "style": {
-        "navigationBarTitleText": "随机美食"
+        "navigationBarTitleText": "今天吃什么"
       }
     },
     {
@@ -21,7 +27,7 @@
     {
       "path": "pages/checkin/index",
       "style": {
-        "navigationBarTitleText": "起床签到"
+        "navigationBarTitleText": "签到"
       }
     },
     {
@@ -31,9 +37,27 @@
       }
     },
     {
-      "path": "pages/login/index",
+      "path": "pages/mine/profile",
       "style": {
-        "navigationBarTitleText": "登录"
+        "navigationBarTitleText": "个人资料"
+      }
+    },
+    {
+      "path": "pages/mine/password",
+      "style": {
+        "navigationBarTitleText": "修改密码"
+      }
+    },
+    {
+      "path": "pages/tools/tax-calculator",
+      "style": {
+        "navigationBarTitleText": "个税计算器"
+      }
+    },
+    {
+      "path": "pages/tools/loan-calculator",
+      "style": {
+        "navigationBarTitleText": "贷款计算器"
       }
     }
   ],

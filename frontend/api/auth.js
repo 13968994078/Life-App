@@ -29,3 +29,11 @@ export function getCurrentUser() {
     url: '/auth/me'
   })
 }
+
+export function updateProfile(data) {
+  return request({
+    url: '/auth/profile',
+    method: 'PUT',
+    data
+  })
+}

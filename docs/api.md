@@ -20,6 +20,21 @@ Base URL: `http://47.97.40.183/api`
 
 返回对象仍保留 `poolType` 字段兼容旧数据，但当前前端不再暴露池子筛选和池子标签。
 
+列表项会额外返回添加人展示信息，其中 `creatorName` 来自 `user_info.username`，`creatorAvatar` 来自 `user_info.avatar`。如果创建人记录或用户名缺失，名称会回退为 `用户{id}`，头像为空：
+
+```json
+{
+  "id": 1,
+  "userId": 1,
+  "name": "黄焖鸡",
+  "category": "午餐",
+  "priceRange": "20-30",
+  "poolType": "PUBLIC",
+  "creatorName": "alice",
+  "creatorAvatar": "/static/profile-avatars/avatar-tea.png"
+}
+```
+
 ### `POST /food`
 
 新增美食。当前前端不再提供池子选择，未显式传 `poolType` 时后端默认按公开美食处理。
@@ -118,6 +133,30 @@ Base URL: `http://47.97.40.183/api`
 }
 ```
 
+### `PUT /auth/profile`
+
+登录后更新当前用户资料。昵称不能为空；头像传空字符串会清空头像。
+
+请求体：
+
+```json
+{
+  "nickname": "Alice",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+
+返回当前最新用户资料：
+
+```json
+{
+  "id": 1,
+  "username": "demo",
+  "nickname": "Alice",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+
 ### `GET /auth/me`
 
 获取当前登录用户信息，请求头使用：
@@ -146,7 +185,48 @@ Authorization: Bearer <token>
 
 ### `GET /check-in/public-board`
 
-查询公开签到榜单，返回所有用户的今日签到状态、连续签到天数和累计签到天数摘要。
+查询公开签到榜单，返回所有用户的头像、今日签到状态、连续签到天数和累计签到天数摘要。
+
+## Content
+
+### `GET /content/home`
+
+获取首页与主页面共用的轻量文案配置，当前为公开接口，不要求登录。
+
+返回示例：
+
+```json
+{
+  "quote": {
+    "text": "把日子翻到今天这一页，先吃好一顿。",
+    "source": "今日短笺"
+  },
+  "homeHero": {
+    "title": "今天这一页，从饭点和作息开始",
+    "subtitle": "先吃稳一餐，再记下一次起床时间，日子就有了线索。"
+  },
+  "foodHero": {
+    "title": "这一餐，让转盘提个醒",
+    "subtitle": "选个大概方向，剩下的交给一点运气。",
+    "emptyTip": "菜单还是空的，先写下几样常吃的。"
+  },
+  "checkinHero": {
+    "title": "把清晨留一笔",
+    "subtitle": "起床时间写下来，作息会慢慢露出自己的样子。",
+    "emptyTip": "这个月还没有记录，第一次签到会从这里开始。"
+  },
+  "mineHero": {
+    "title": "你的生活小账本",
+    "subtitle": "饭点、签到、提醒，都收在这一页，翻起来不费劲。"
+  }
+}
+```
+
+说明：
+
+- 服务端固定优先请求远程文案源
+- 远程源不可用时自动回退到本地预置文案
+- 服务端对远程结果做短时缓存，避免每次请求都访问第三方
 
 ## Settings
 

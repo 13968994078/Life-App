@@ -1,16 +1,16 @@
 <template>
   <view class="page">
     <view class="card history-banner archive-stage">
-      <view class="editorial-kicker">Archive Issue</view>
+      <view class="editorial-kicker">饭点档案</view>
       <view class="banner-title">抽取记录</view>
-      <view class="banner-subtitle">把最近抽中过的美食集中展开，方便回看有没有总是抽到同几样，也让你的偏好慢慢显形。</view>
-      <navigator class="back-link editorial-link" url="/pages/food/index">回到随机美食</navigator>
+      <view class="banner-subtitle">每一次转盘结果，都像菜单页边的一行小注。</view>
+      <navigator class="back-link editorial-link" url="/pages/food/index">回到美食页</navigator>
     </view>
 
     <view class="card summary-card archive-summary-strip" v-if="history.length">
       <view class="summary-item">
         <view class="summary-value">{{ history.length }}</view>
-        <view class="summary-label">总记录数</view>
+        <view class="summary-label">总记录</view>
       </view>
       <view class="summary-item">
         <view class="summary-value text-sm">{{ latestHistoryTime }}</view>
@@ -23,9 +23,9 @@
     </view>
 
     <view class="card history-card archive-list-card">
-      <view class="editorial-kicker list-kicker">Archive List</view>
-      <view class="section-title section-no-margin">完整列表</view>
-      <view class="section-subtext list-tip">当前接口会返回最近 20 条抽取记录。</view>
+      <view class="editorial-kicker list-kicker">页边清单</view>
+      <view class="section-title section-no-margin">最近 20 条</view>
+      <view class="section-subtext list-tip">饭点来过，就会在这里留下一行。</view>
       <view v-for="group in groupedHistory" :key="group.label" class="history-group">
         <view class="group-title">{{ group.label }}</view>
         <view v-for="item in group.items" :key="item.id" class="history-row">
@@ -36,7 +36,7 @@
           <view class="history-index">{{ itemIndexLabel(item) }}</view>
         </view>
       </view>
-      <view v-if="!history.length" class="empty-text">还没有抽取记录，先回到美食页转一次试试。</view>
+      <view v-if="!history.length" class="empty-text">还没有抽取记录，先回到美食页转一次。</view>
     </view>
   </view>
 </template>
@@ -85,7 +85,7 @@ export default {
       const sortedNames = Object.keys(counts).sort((left, right) => counts[right] - counts[left] || left.localeCompare(right))
       const highestCount = counts[sortedNames[0]]
       const topNames = sortedNames.filter((name) => counts[name] === highestCount)
-      return topNames.length === 1 ? topNames[0] : `${topNames[0]} 等${topNames.length}项`
+      return topNames.length === 1 ? topNames[0] : `${topNames[0]} 等 ${topNames.length} 项`
     }
   },
   onShow() {

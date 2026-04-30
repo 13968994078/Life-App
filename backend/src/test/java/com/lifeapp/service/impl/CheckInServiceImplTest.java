@@ -31,6 +31,7 @@ class CheckInServiceImplTest {
         SettingService settingService = mock(SettingService.class);
 
         UserInfo alice = user(1L, "alice", "Alice");
+        alice.setAvatar("/static/profile-avatars/avatar-sun.png");
         UserInfo bob = user(2L, "bob", "Bob");
         UserInfo carol = user(3L, "carol", "Carol");
         when(userInfoMapper.selectList(any())).thenReturn(Arrays.asList(alice, bob, carol));
@@ -52,6 +53,7 @@ class CheckInServiceImplTest {
 
             assertEquals(3, board.size());
             assertEquals("alice", board.get(0).getUsername());
+            assertEquals("/static/profile-avatars/avatar-sun.png", board.get(0).getAvatar());
             assertTrue(board.get(0).isTodayChecked());
             assertEquals("LATE", board.get(0).getTodayStatus());
             assertEquals(2, board.get(0).getStreakDays());

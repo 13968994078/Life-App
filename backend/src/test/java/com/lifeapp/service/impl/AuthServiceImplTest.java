@@ -5,9 +5,11 @@ import com.lifeapp.common.BadRequestException;
 import com.lifeapp.dto.ChangePasswordRequest;
 import com.lifeapp.dto.LoginRequest;
 import com.lifeapp.dto.RegisterRequest;
+import com.lifeapp.dto.UpdateProfileRequest;
 import com.lifeapp.mapper.UserInfoMapper;
 import com.lifeapp.model.UserInfo;
 import com.lifeapp.vo.LoginResponse;
+import com.lifeapp.vo.UserProfile;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -184,5 +186,65 @@ class AuthServiceImplTest {
         }
 
         assertFalse("newpass".equals(user.getPassword()));
+    }
+
+    @Test
+    void updateProfileUpdatesNicknameAndAvatarForCurrentUser() {
+        UserInfoMapper mapper = mock(UserInfoMapper.class);
+        JwtUtil jwtUtil = new JwtUtil(TEST_SECRET);
+        UserInfo user = new UserInfo();
+        user.setId(1L);
+        user.setUsername("demo");
+        user.setNickname("demo");
+        user.setAvatar("");
+        when(mapper.selectById(eq(1L))).thenReturn(user);
+
+        AuthServiceImpl service = new AuthServiceImpl(mapper, jwtUtil);
+        UpdateProfileRequest request = new UpdateProfileRequest();
+        request.setNickname("  早睡达人  ");
+        request.setAvatar("  https://example.com/avatar.png  ");
+
+        com.lifeapp.auth.AuthContext.setUserId(1L);
+        UserProfile profile;
+        try {
+            profile = service.updateProfile(request);
+        } finally {
+            com.lifeapp.auth.AuthContext.clear();
+        }
+
+        assertEquals("早睡达人", profile.getNickname());
+        assertEquals("https://example.com/avatar.png", profile.getAvatar());
+        assertEquals("早睡达人", user.getNickname());
+        assertEquals("https://example.com/avatar.png", user.getAvatar());
+        verify(mapper).updateById(user);
+    }
+
+    @Test
+    void updateProfileAllowsClearingAvatar() {
+        UserInfoMapper mapper = mock(UserInfoMapper.class);
+        JwtUtil jwtUtil = new JwtUtil(TEST_SECRET);
+        UserInfo user = new UserInfo();
+        user.setId(1L);
+        user.setUsername("demo");
+        user.setNickname("demo");
+        user.setAvatar("https://example.com/avatar.png");
+        when(mapper.selectById(eq(1L))).thenReturn(user);
+
+        AuthServiceImpl service = new AuthServiceImpl(mapper, jwtUtil);
+        UpdateProfileRequest request = new UpdateProfileRequest();
+        request.setNickname("demo");
+        request.setAvatar("   ");
+
+        com.lifeapp.auth.AuthContext.setUserId(1L);
+        UserProfile profile;
+        try {
+            profile = service.updateProfile(request);
+        } finally {
+            com.lifeapp.auth.AuthContext.clear();
+        }
+
+        assertNull(profile.getAvatar());
+        assertNull(user.getAvatar());
+        verify(mapper).updateById(user);
     }
 }

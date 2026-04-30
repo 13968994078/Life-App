@@ -43,6 +43,18 @@ function main() {
   ].forEach((marker) => assertIncludes(foodApi, marker, 'frontend/api/food.js'))
 
   ;[
+    'lastAuthUserId',
+    'resetEditStateForAccount',
+    'validateEditingPermission',
+    'this.resetEditStateForAccount()',
+    'this.validateEditingPermission()',
+    'canManageFood(item)',
+    'String(item.userId) === this.currentUserId',
+    'return item.creatorName ||',
+    'return item && item.creatorAvatar ? item.creatorAvatar :'
+  ].forEach((marker) => assertIncludes(food, marker, 'frontend/pages/food/index.vue'))
+
+  ;[
     'poolViews',
     'poolTypes',
     'currentPoolViewLabel',

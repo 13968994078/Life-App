@@ -16,7 +16,8 @@ public class AuthInterceptor implements HandlerInterceptor {
     private static final String BEARER_PREFIX = "Bearer ";
     private static final Set<String> PUBLIC_PATHS = new HashSet<String>(Arrays.asList(
             "/api/auth/login",
-            "/api/auth/register"
+            "/api/auth/register",
+            "/api/content/home"
     ));
 
     private final JwtUtil jwtUtil;

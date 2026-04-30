@@ -2,11 +2,14 @@
   <view class="page">
     <view class="card login-banner login-stage">
       <view class="banner-topline">
-        <view class="banner-badge editorial-kicker">Editorial Access</view>
-        <view class="banner-side-note">{{ isRegisterMode ? 'Register Ready' : 'Demo Ready' }}</view>
+        <view class="banner-badge editorial-kicker">
+          <brand-icon :name="isRegisterMode ? 'profile' : 'quote'" :size="22" />
+          <text>{{ isRegisterMode ? '注册' : '登录' }}</text>
+        </view>
+        <view class="banner-side-note">{{ isRegisterMode ? '新页准备好' : '演示账号可用' }}</view>
       </view>
-      <view class="banner-title">{{ isRegisterMode ? '先注册一个账号，再把你的节奏留在自己的版面里。' : '登录以后，首页才会真正写上你的节奏。' }}</view>
-      <view class="banner-subtitle">{{ isRegisterMode ? '注册成功后会直接写入登录态，并按照既有 redirect 逻辑回到目标页面。' : '当前版本已接入后端登录接口。登录后即可访问美食、签到和设置数据，并按既有逻辑返回目标页面。' }}</view>
+      <view class="banner-title">{{ isRegisterMode ? '开一页属于你的生活账本。' : '回到你的生活账本。' }}</view>
+      <view class="banner-subtitle">{{ isRegisterMode ? '注册成功后，今天的记录会从首页开始。' : '登录后继续查看美食、签到和设置。' }}</view>
       <view class="banner-note demo-pill">演示账号：demo / 123456</view>
       <view class="auth-mode-switch">
         <view class="mode-pill" :class="{ active: !isRegisterMode }" @tap="switchMode('login')">登录</view>
@@ -15,16 +18,19 @@
     </view>
 
     <view class="card login-card credential-card">
-      <view class="editorial-kicker form-kicker">{{ isRegisterMode ? 'Register Flow' : 'Credential Form' }}</view>
+      <view class="editorial-kicker form-kicker">
+        <brand-icon :name="isRegisterMode ? 'profile' : 'key'" :size="22" />
+        <text>{{ isRegisterMode ? '新页信息' : '账号信息' }}</text>
+      </view>
       <view class="section-title section-no-margin">{{ isRegisterMode ? '注册账号' : '账号登录' }}</view>
-      <view class="section-subtext form-tip">{{ isRegisterMode ? '用户名用于登录，昵称用于展示。' : '已接入后端登录接口。' }}</view>
+      <view class="section-subtext form-tip">{{ isRegisterMode ? '用户名用来登录，昵称会出现在页面上。' : '输入账号和密码，接着写今天这一页。' }}</view>
       <view class="field-group">
         <view class="field-label">用户名</view>
         <input v-model="form.username" class="input" placeholder="请输入用户名" />
       </view>
       <view v-if="isRegisterMode" class="field-group register-panel">
         <view class="field-label">昵称</view>
-        <input v-model="form.nickname" class="input" placeholder="请输入展示昵称" />
+        <input v-model="form.nickname" class="input" placeholder="请输入昵称" />
       </view>
       <view class="field-group">
         <view class="field-label">密码</view>
@@ -35,7 +41,7 @@
       </view>
       <view v-if="isRegisterMode" class="field-group confirm-password-field">
         <view class="field-label">确认密码</view>
-        <input v-model="form.confirmPassword" class="input confirm-input" :password="!showPassword" placeholder="请再次输入密码" />
+        <input v-model="form.confirmPassword" class="input confirm-input" :password="!showPassword" placeholder="再输入一次密码" />
       </view>
       <view class="primary-btn" :class="{ disabled: submitting }" @tap="handleSubmit">{{ submitting ? submitLoadingText : submitButtonText }}</view>
       <view class="login-tip">{{ submitTip }}</view>
@@ -44,13 +50,16 @@
 </template>
 
 <script>
+import BrandIcon from '../../components/brand-icon.vue'
 import { getCurrentUser, login, register } from '../../api/auth'
 import { clearSession, getToken, setAuthUser, setToken } from '../../utils/auth'
 
 export default {
+  components: {
+    BrandIcon
+  },
   data() {
     return {
-      redirectUrl: '/pages/index/index',
       forceLogin: false,
       mode: 'login',
       checkingSession: false,
@@ -69,21 +78,18 @@ export default {
       return this.mode === 'register'
     },
     submitButtonText() {
-      return this.isRegisterMode ? '注册并进入' : '登录并进入'
+      return this.isRegisterMode ? '注册进入' : '登录进入'
     },
     submitLoadingText() {
-      return this.isRegisterMode ? '注册中...' : '登录中...'
+      return this.isRegisterMode ? '正在注册...' : '正在登录...'
     },
     submitTip() {
       return this.isRegisterMode
-        ? '注册成功后会自动登录，并跳回你最初要去的页面。'
-        : '如果你是从某个功能页跳转过来的，登录成功后会自动回到原目标页。'
+        ? '注册成功后回到首页。'
+        : '登录成功后回到首页。'
     }
   },
   onLoad(options) {
-    if (options && options.redirect) {
-      this.redirectUrl = decodeURIComponent(options.redirect)
-    }
     if (options && options.force === 'true') {
       this.forceLogin = true
     }
@@ -131,7 +137,7 @@ export default {
     },
     async handleLogin() {
       if (!this.form.username || !this.form.password) {
-        uni.showToast({ title: '请填写用户名和密码', icon: 'none' })
+        uni.showToast({ title: '先填写用户名和密码', icon: 'none' })
         return
       }
 
@@ -141,7 +147,7 @@ export default {
           username: this.form.username,
           password: this.form.password
         })
-        this.finishAuth(result, '登录成功')
+        this.finishAuth(result, '已登录')
       } catch (error) {
         uni.showToast({ title: error.message || '登录失败', icon: 'none' })
       } finally {
@@ -150,11 +156,11 @@ export default {
     },
     async handleRegister() {
       if (!this.form.username || !this.form.nickname || !this.form.password || !this.form.confirmPassword) {
-        uni.showToast({ title: '请完整填写注册信息', icon: 'none' })
+        uni.showToast({ title: '注册信息还没填完整', icon: 'none' })
         return
       }
       if (this.form.password !== this.form.confirmPassword) {
-        uni.showToast({ title: '两次输入的密码不一致', icon: 'none' })
+        uni.showToast({ title: '两次密码不一致', icon: 'none' })
         return
       }
 
@@ -166,7 +172,7 @@ export default {
           password: this.form.password,
           confirmPassword: this.form.confirmPassword
         })
-        this.finishAuth(result, '注册成功')
+        this.finishAuth(result, '已注册')
       } catch (error) {
         uni.showToast({ title: error.message || '注册失败', icon: 'none' })
       } finally {
@@ -183,13 +189,7 @@ export default {
       }, 500)
     },
     navigateAfterLogin() {
-      const tabPages = ['/pages/index/index', '/pages/food/index', '/pages/checkin/index', '/pages/mine/index']
-      if (tabPages.includes(this.redirectUrl)) {
-        uni.switchTab({ url: this.redirectUrl })
-        return
-      }
-
-      uni.redirectTo({ url: this.redirectUrl })
+      uni.switchTab({ url: '/pages/index/index' })
     }
   }
 }
@@ -205,9 +205,19 @@ export default {
 }
 
 .banner-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10rpx;
+  white-space: nowrap;
   background: rgba(255, 247, 238, 0.16);
   color: #fff6ef;
   border-color: rgba(255, 245, 236, 0.18);
+}
+
+.banner-badge text,
+.form-kicker text {
+  white-space: nowrap;
 }
 
 .banner-topline {
@@ -292,6 +302,11 @@ export default {
 }
 
 .form-kicker {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10rpx;
+  white-space: nowrap;
   margin-bottom: 14rpx;
 }
 

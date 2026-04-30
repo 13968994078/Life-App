@@ -8,13 +8,19 @@ import com.lifeapp.dto.CreateFoodRequest;
 import com.lifeapp.dto.UpdateFoodRequest;
 import com.lifeapp.mapper.FoodDrawRecordMapper;
 import com.lifeapp.mapper.FoodMapper;
+import com.lifeapp.mapper.UserInfoMapper;
 import com.lifeapp.model.Food;
 import com.lifeapp.model.FoodDrawRecord;
+import com.lifeapp.model.UserInfo;
 import com.lifeapp.service.FoodService;
+import com.lifeapp.vo.FoodListItem;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,17 +28,21 @@ public class FoodServiceImpl implements FoodService {
 
     private final FoodMapper foodMapper;
     private final FoodDrawRecordMapper foodDrawRecordMapper;
+    private final UserInfoMapper userInfoMapper;
 
-    public FoodServiceImpl(FoodMapper foodMapper, FoodDrawRecordMapper foodDrawRecordMapper) {
+    public FoodServiceImpl(FoodMapper foodMapper,
+                           FoodDrawRecordMapper foodDrawRecordMapper,
+                           UserInfoMapper userInfoMapper) {
         this.foodMapper = foodMapper;
         this.foodDrawRecordMapper = foodDrawRecordMapper;
+        this.userInfoMapper = userInfoMapper;
     }
 
     @Override
-    public List<Food> list(String category, String poolView) {
+    public List<FoodListItem> list(String category, String poolView) {
         Long userId = currentUserId();
         String normalizedCategory = normalizeCategory(category);
-        return listVisibleFoods(normalizedCategory, userId);
+        return toListItems(listVisibleFoods(normalizedCategory, userId));
     }
 
     @Override
@@ -127,6 +137,48 @@ public class FoodServiceImpl implements FoodService {
         return foodMapper.selectList(query);
     }
 
+    private List<FoodListItem> toListItems(List<Food> foods) {
+        if (foods == null || foods.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, UserInfo> usersById = loadUsersById(foods);
+        return foods.stream()
+                .map(food -> {
+                    UserInfo creator = usersById.get(food.getUserId());
+                    return FoodListItem.from(food, creatorName(creator, food.getUserId()), creator == null ? null : creator.getAvatar());
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Map<Long, UserInfo> loadUsersById(List<Food> foods) {
+        Set<Long> userIds = foods.stream()
+                .map(Food::getUserId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        if (userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<UserInfo> users = userInfoMapper.selectList(new LambdaQueryWrapper<UserInfo>().in(UserInfo::getId, userIds));
+        if (users == null || users.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return users.stream()
+                .collect(Collectors.toMap(UserInfo::getId, user -> user, (first, second) -> first));
+    }
+
+    private String creatorName(UserInfo creator, Long userId) {
+        if (creator != null) {
+            String username = normalizeOptionalText(creator.getUsername());
+            if (username != null) {
+                return username;
+            }
+        }
+        return userId == null ? "未知用户" : "用户" + userId;
+    }
+
     private boolean canManageFood(Food food, Long userId) {
         return food != null && food.isEnabled() && userId.equals(food.getUserId());
     }
@@ -136,6 +188,13 @@ public class FoodServiceImpl implements FoodService {
             return null;
         }
         return category.trim();
+    }
+
+    private String normalizeOptionalText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
     }
 
     private Long currentUserId() {

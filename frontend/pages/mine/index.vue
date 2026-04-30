@@ -1,120 +1,125 @@
 <template>
-    <view class="page">
-      <view class="card mine-banner account-stage">
-        <view class="stage-topline">
-          <view class="editorial-kicker stage-kicker">
-            <brand-icon name="mine" :size="26" />
-            Personal Ledger
-          </view>
-          <view class="stage-note">账号与作息</view>
+  <view class="page mine-page">
+    <view class="card mine-hero profile-hero">
+      <view class="hero-topline">
+        <view class="section-label">
+          <brand-icon name="profile" :size="24" />
+          <text>个人主页</text>
         </view>
-      <view class="banner-title">把个人节奏收进一张清晰的版面。</view>
-      <view class="banner-subtitle">这里放账号状态和早起目标，方便你把习惯参数固定下来，不用每次都重新找。</view>
-      <view class="stage-strip">
-        <view class="stage-metric">
-          <view class="stage-metric-label">目标起床</view>
-          <view class="stage-metric-value">{{ form.wakeTargetTime || '--:--' }}</view>
+        <view class="hero-note">{{ todayGreeting }}</view>
+      </view>
+      <view class="hero-title">{{ content.title }}</view>
+      <view class="hero-subtitle">{{ content.subtitle }}</view>
+      <view class="hero-strip">
+        <view class="hero-strip-item">
+          <view class="hero-strip-label">上次饭点</view>
+          <view class="hero-strip-value">{{ latestFoodName }}</view>
         </view>
-        <view class="stage-metric">
-          <view class="stage-metric-label">提醒状态</view>
-          <view class="stage-metric-value">{{ form.notificationEnabled ? '已开启' : '未开启' }}</view>
+        <view class="hero-strip-item">
+          <view class="hero-strip-label">菜单</view>
+          <view class="hero-strip-value">{{ foods.length }} 项</view>
+        </view>
+        <view class="hero-strip-item">
+          <view class="hero-strip-label">签到席位</view>
+          <view class="hero-strip-value">{{ rankText }}</view>
         </view>
       </view>
     </view>
 
-    <view class="card profile-card identity-card">
-      <view class="profile-aside">
-        <view class="avatar-wrap">
-          <view class="avatar">{{ avatarLetter }}</view>
-        </view>
-        <view class="profile-overline">Member Profile</view>
+    <view class="card overview-card">
+      <view class="section-label">
+        <brand-icon name="stats" :size="24" />
+        <text>本页索引</text>
       </view>
-      <view class="profile-main">
-        <view class="name">{{ userName }}</view>
-        <view class="desc">{{ userDesc }}</view>
-        <view class="profile-tags">
-          <view class="soft-chip">{{ isLoggedIn ? '已登录' : '未登录' }}</view>
-          <view class="soft-chip">多用户模式</view>
-        </view>
-        <view class="profile-meta-grid">
-          <view class="meta-item">
-            <view class="meta-label">登录账号</view>
-            <view class="meta-value account-value">@{{ userAccount }}</view>
-          </view>
-          <view class="meta-item">
-            <view class="meta-label">数据范围</view>
-            <view class="meta-value">美食 / 签到 / 设置</view>
-          </view>
-          <view class="meta-item">
-            <view class="meta-label">当前入口</view>
-            <view class="meta-value">{{ isLoggedIn ? '多用户数据已隔离' : '等待登录' }}</view>
-          </view>
+      <view class="section-title overview-title">最近的线索</view>
+      <view class="stats-grid">
+        <view v-for="item in lifeStats" :key="item.label" class="stat-card">
+          <view class="stat-value">{{ item.value }}</view>
+          <view class="stat-label">{{ item.label }}</view>
+          <view class="stat-hint">{{ item.hint }}</view>
         </view>
       </view>
     </view>
 
-    <view class="card auth-card settings-sheet">
-      <view class="sheet-head">
+    <view class="card status-card">
+      <view class="status-main">
         <view>
-          <view class="editorial-kicker sheet-kicker">
-            <brand-icon name="mine" :size="26" />
-            Account Access
+          <view class="section-label">
+            <brand-icon name="petal" :size="24" />
+            <text>今日小结</text>
           </view>
-          <view class="section-title section-no-margin">账号入口</view>
+          <view class="section-title status-title">{{ todayStatusTitle }}</view>
+          <view class="section-subtext">{{ todayStatusDesc }}</view>
         </view>
-        <view class="sheet-badge">{{ isLoggedIn ? 'Active' : 'Guest' }}</view>
-      </view>
-      <view class="setting-desc">登录后即可同步查看个人资料、起床设置和历史数据。</view>
-      <view class="auth-actions">
-        <navigator class="primary-btn auth-btn" :url="loginEntryUrl">{{ isLoggedIn ? '切换账号' : '前往登录' }}</navigator>
-        <view v-if="isLoggedIn" class="secondary-btn auth-btn" @tap="handleLogout">退出登录</view>
+        <view class="status-badge" :class="todayStatusClass">
+          <view class="status-badge-value">{{ todayStatusText }}</view>
+          <view class="status-badge-label">{{ todayTimeText }}</view>
+        </view>
       </view>
     </view>
 
-    <view class="card password-card settings-sheet password-sheet">
-      <view class="editorial-kicker sheet-kicker">
-        <brand-icon name="key" :size="26" />
-        Password Security
+    <view class="card activity-card">
+      <view class="section-label">
+        <brand-icon name="history" :size="24" />
+        <text>页边记录</text>
       </view>
-      <view class="section-title section-no-margin">修改密码</view>
-      <view class="setting-desc">输入旧密码和新密码，修改后下次登录请使用新密码。</view>
-      <view class="password-form">
-        <view class="form-field">
-          <view class="form-label">旧密码</view>
-          <input v-model="passwordForm.oldPassword" class="password-input-field" password placeholder="请输入旧密码" />
-        </view>
-        <view class="form-field">
-          <view class="form-label">新密码</view>
-          <input v-model="passwordForm.newPassword" class="password-input-field" password placeholder="请输入新密码" />
-        </view>
-        <view class="form-field">
-          <view class="form-label">确认新密码</view>
-          <input v-model="passwordForm.confirmPassword" class="password-input-field" password placeholder="请再次输入新密码" />
+      <view class="section-title activity-title">最近记录</view>
+      <view class="activity-list">
+        <view v-for="item in recentActivities" :key="item.title" class="activity-row">
+          <view class="activity-dot"></view>
+          <view class="activity-main">
+            <view class="activity-name">{{ item.title }}</view>
+            <view class="activity-meta">{{ item.meta }}</view>
+          </view>
         </view>
       </view>
-      <view class="primary-btn" :class="{ disabled: passwordSubmitting }" @tap="handleChangePassword">{{ passwordSubmitting ? '提交中...' : '确认修改' }}</view>
     </view>
 
-    <view class="card settings-card settings-sheet">
-      <view class="editorial-kicker sheet-kicker">
-        <brand-icon name="wake" :size="26" />
-        Wake Settings
+    <view class="card management-card">
+      <view class="section-label">
+        <brand-icon name="list" :size="24" />
+        <text>目录</text>
       </view>
-      <view class="section-title section-no-margin">起床设置</view>
-      <view class="setting-desc">目标时间越稳定，签到统计越有参考意义。</view>
+      <view class="section-title management-title">常用入口，放在手边</view>
+      <view class="management-list">
+        <view v-for="item in managementItems" :key="item.title" class="management-row" @tap="handleManagement(item.action)">
+          <view class="management-icon">
+            <brand-icon :name="item.icon" :size="34" />
+          </view>
+          <view class="management-main">
+            <view class="management-name">{{ item.title }}</view>
+            <view class="management-desc">{{ item.desc }}</view>
+          </view>
+          <view class="management-arrow">›</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card setting-card">
+      <view class="section-label">
+        <brand-icon name="target" :size="24" />
+        <text>清晨设置</text>
+      </view>
+      <view class="section-title setting-title">给清晨定一个轻一点的闹钟</view>
       <picker mode="time" :value="form.wakeTargetTime" @change="onTimeChange">
-        <view class="setting-picker">
-          <view>
-            <view class="picker-label">目标时间</view>
-            <view class="picker-hint">建议固定一个容易坚持的起床点。</view>
+        <view class="setting-row pick-row">
+          <view class="setting-inline-icon">
+            <brand-icon name="target" :size="28" />
           </view>
-          <view class="picker-value">{{ form.wakeTargetTime || '--:--' }}</view>
+          <view>
+            <view class="setting-name">目标时间</view>
+            <view class="setting-desc">先定一个不太为难自己的时间。</view>
+          </view>
+          <view class="setting-value">{{ form.wakeTargetTime || '--:--' }}</view>
         </view>
       </picker>
-      <view class="toggle-row">
+      <view class="setting-row toggle-row">
+        <view class="setting-inline-icon">
+          <brand-icon name="notification" :size="28" />
+        </view>
         <view>
-          <view class="setting-row">提醒开关</view>
-          <view class="toggle-hint">{{ form.notificationEnabled ? '当前已开启晨间提醒。' : '当前未开启晨间提醒。' }}</view>
+          <view class="setting-name">晨间提醒</view>
+          <view class="setting-desc">{{ form.notificationEnabled ? '提醒已开启。' : '提醒未开启。' }}</view>
         </view>
         <switch :checked="form.notificationEnabled" color="#ff8b2b" @change="onNotificationChange" />
       </view>
@@ -125,9 +130,19 @@
 
 <script>
 import BrandIcon from '../../components/brand-icon.vue'
-import { changePassword, getCurrentUser } from '../../api/auth'
+import { getCurrentUser } from '../../api/auth'
+import { getCheckinStatistics, getPublicCheckinBoard, getTodayCheckin } from '../../api/checkin'
+import { getHomeContent } from '../../api/content'
+import { getFoodHistory, getFoodList } from '../../api/food'
 import { getSettings, updateSettings } from '../../api/settings'
 import { getAuthUser, getToken, logout, setAuthUser } from '../../utils/auth'
+
+function createDefaultMineContent() {
+  return {
+    title: '你的生活小账本',
+    subtitle: '饭点、签到、提醒，都收在这一页，翻起来不费劲。'
+  }
+}
 
 export default {
   components: {
@@ -137,37 +152,162 @@ export default {
     return {
       authUser: null,
       setting: {},
+      todayCheckin: null,
+      statistics: {},
+      publicBoard: [],
+      foods: [],
+      history: [],
+      content: createDefaultMineContent(),
       form: {
         wakeTargetTime: '07:00',
         notificationEnabled: false
-      },
-      passwordSubmitting: false,
-      passwordForm: {
-        oldPassword: '',
-        newPassword: '',
-        confirmPassword: ''
       }
     }
   },
   computed: {
-    isLoggedIn() {
-      return !!getToken()
+    todayGreeting() {
+      const hour = new Date().getHours()
+      if (hour < 11) {
+        return '早上好'
+      }
+      if (hour < 18) {
+        return '今天慢慢翻页'
+      }
+      return '今晚把灯调暗一点'
     },
-    loginEntryUrl() {
-      return this.isLoggedIn ? '/pages/login/index?force=true' : '/pages/login/index'
+    currentUserId() {
+      if (!this.authUser || this.authUser.id === null || this.authUser.id === undefined) {
+        return null
+      }
+      return String(this.authUser.id)
     },
-    userName() {
-      return this.authUser && this.authUser.nickname ? this.authUser.nickname : '奇幻妙妙屋用户'
+    rankText() {
+      if (!this.currentUserId || !this.publicBoard.length) {
+        return '--'
+      }
+      const index = this.publicBoard.findIndex((item) => String(item.userId) === this.currentUserId)
+      return index >= 0 ? `第 ${index + 1} 名` : '--'
     },
-    userAccount() {
-      return this.authUser && this.authUser.username ? this.authUser.username : '--'
+    latestFoodName() {
+      return this.history.length && this.history[0].foodName ? this.history[0].foodName : '还没抽'
     },
-    avatarLetter() {
-      const name = this.userName.trim()
-      return name ? name.charAt(0).toUpperCase() : 'L'
+    lifeStats() {
+      return [
+        {
+          label: '连续签到',
+          value: `${this.statistics.streakDays || 0} 天`,
+          hint: '坚持下去'
+        },
+        {
+          label: '累计签到',
+          value: `${this.statistics.totalDays || 0} 天`,
+          hint: '成功的痕迹'
+        },
+        {
+          label: '美食清单',
+          value: `${this.foods.length} 项`,
+          hint: '转盘里的名字'
+        },
+        {
+          label: '抽取记录',
+          value: `${this.history.length} 条`,
+          hint: '饭点留下的回声'
+        }
+      ]
     },
-    userDesc() {
-      return this.isLoggedIn ? '当前账号已连接你的个人美食、签到和设置数据，每位用户的数据彼此隔离。' : '登录后可访问完整个人数据。'
+    todayStatusTitle() {
+      return this.todayCheckin ? '今天已签到' : '今天还没签到'
+    },
+    todayStatusDesc() {
+      if (!this.todayCheckin) {
+        return `目标时间 ${this.form.wakeTargetTime || '--:--'}，签到后会写进今天的记录。`
+      }
+      return this.todayCheckin.status === 'ON_TIME'
+        ? '今天准时签到。'
+        : '今天成功签到，只是比目标晚一点。'
+    },
+    todayStatusText() {
+      if (!this.todayCheckin) {
+        return '待签到'
+      }
+      return this.todayCheckin.status === 'ON_TIME' ? '准时' : '已签到'
+    },
+    todayStatusClass() {
+      if (!this.todayCheckin) {
+        return 'idle'
+      }
+      return this.todayCheckin.status === 'ON_TIME' ? 'ok' : 'late'
+    },
+    todayTimeText() {
+      return this.todayCheckin && this.todayCheckin.checkTime ? this.formatDateTime(this.todayCheckin.checkTime) : this.form.wakeTargetTime || '--:--'
+    },
+    recentActivities() {
+      const activities = []
+
+      if (this.history.length) {
+        const latest = this.history[0]
+        activities.push({
+          title: `上次饭点写下「${latest.foodName || '未命名美食'}」`,
+          meta: this.formatDateTime(latest.createdAt)
+        })
+      } else {
+        activities.push({
+          title: '饭点还没留下记录',
+          meta: '去美食页转一次，这里就会出现。'
+        })
+      }
+
+      activities.push({
+        title: this.todayCheckin ? '今天已签到' : '今天还没签到',
+        meta: this.todayCheckin ? this.formatDateTime(this.todayCheckin.checkTime) : `目标时间 ${this.form.wakeTargetTime || '--:--'}`
+      })
+
+      activities.push({
+        title: this.form.notificationEnabled ? '晨间提醒已开启' : '晨间提醒未开启',
+        meta: this.form.notificationEnabled ? '到点会轻轻提醒你。' : '容易忘记时，可以打开提醒。'
+      })
+
+      return activities
+    },
+    managementItems() {
+      return [
+        {
+          icon: 'profile',
+          title: '个人资料',
+          desc: '把昵称和头像整理一下。',
+          action: 'profile'
+        },
+        {
+          icon: 'food',
+          title: '我的美食库',
+          desc: '把常吃和想试的都收进来。',
+          action: 'food'
+        },
+        {
+          icon: 'history',
+          title: '抽取记录',
+          desc: '回看饭点留下的记录。',
+          action: 'history'
+        },
+        {
+          icon: 'key',
+          title: '修改密码',
+          desc: '给账号换一把新钥匙。',
+          action: 'password'
+        },
+        {
+          icon: 'mine',
+          title: '切换账号',
+          desc: '换一个账号登录。',
+          action: 'switchAccount'
+        },
+        {
+          icon: 'logout',
+          title: '退出登录',
+          desc: '清除本机登录状态。',
+          action: 'logout'
+        }
+      ]
     }
   },
   onShow() {
@@ -175,8 +315,7 @@ export default {
       return
     }
     this.authUser = getAuthUser()
-    this.loadUser()
-    this.loadSetting()
+    this.loadPageData()
   },
   methods: {
     ensureLoggedIn() {
@@ -187,23 +326,34 @@ export default {
       uni.navigateTo({ url: `/pages/login/index?redirect=${encodeURIComponent('/pages/mine/index')}` })
       return false
     },
-    async loadUser() {
-      if (!this.isLoggedIn) {
-        return
-      }
+    async loadPageData() {
       try {
-        const user = await getCurrentUser()
+        const [user, setting, todayCheckin, statistics, publicBoard, foods, history, contentData] = await Promise.all([
+          getCurrentUser(),
+          getSettings(),
+          getTodayCheckin(),
+          getCheckinStatistics(),
+          getPublicCheckinBoard(),
+          getFoodList(),
+          getFoodHistory(),
+          getHomeContent().catch(() => ({ mineHero: createDefaultMineContent() }))
+        ])
+
         this.authUser = user
         setAuthUser(user)
+        this.setting = setting || {}
+        this.form = {
+          wakeTargetTime: this.setting.wakeTargetTime || '07:00',
+          notificationEnabled: !!this.setting.notificationEnabled
+        }
+        this.todayCheckin = todayCheckin || null
+        this.statistics = statistics || {}
+        this.publicBoard = Array.isArray(publicBoard) ? publicBoard : []
+        this.foods = Array.isArray(foods) ? foods : []
+        this.history = Array.isArray(history) ? history : []
+        this.content = contentData.mineHero || createDefaultMineContent()
       } catch (error) {
-        this.authUser = getAuthUser()
-      }
-    },
-    async loadSetting() {
-      this.setting = await getSettings()
-      this.form = {
-        wakeTargetTime: this.setting.wakeTargetTime || '07:00',
-        notificationEnabled: !!this.setting.notificationEnabled
+        uni.showToast({ title: error.message || '页面加载失败', icon: 'none' })
       }
     },
     onTimeChange(event) {
@@ -213,374 +363,330 @@ export default {
       this.form.notificationEnabled = event.detail.value
     },
     async handleSave() {
-      this.setting = await updateSettings(this.form)
-      this.form = {
-        wakeTargetTime: this.setting.wakeTargetTime,
-        notificationEnabled: !!this.setting.notificationEnabled
-      }
-      uni.showToast({ title: '设置已保存', icon: 'success' })
-    },
-    async handleChangePassword() {
-      if (this.passwordSubmitting) {
-        return
-      }
-      if (!this.passwordForm.oldPassword || !this.passwordForm.newPassword || !this.passwordForm.confirmPassword) {
-        uni.showToast({ title: '请完整填写密码信息', icon: 'none' })
-        return
-      }
-      if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-        uni.showToast({ title: '两次输入的新密码不一致', icon: 'none' })
-        return
-      }
-
       try {
-        this.passwordSubmitting = true
-        await changePassword(this.passwordForm)
-        this.passwordForm = {
-          oldPassword: '',
-          newPassword: '',
-          confirmPassword: ''
+        this.setting = await updateSettings(this.form)
+        this.form = {
+          wakeTargetTime: this.setting.wakeTargetTime,
+          notificationEnabled: !!this.setting.notificationEnabled
         }
-        uni.showToast({ title: '密码已更新', icon: 'success' })
+        uni.showToast({ title: '设置已保存', icon: 'success' })
       } catch (error) {
-        uni.showToast({ title: error.message || '密码修改失败', icon: 'none' })
-      } finally {
-        this.passwordSubmitting = false
+        uni.showToast({ title: error.message || '设置没保存成功', icon: 'none' })
+      }
+    },
+    handleManagement(action) {
+      if (action === 'profile') {
+        uni.navigateTo({ url: '/pages/mine/profile' })
+        return
+      }
+      if (action === 'food') {
+        uni.switchTab({ url: '/pages/food/index' })
+        return
+      }
+      if (action === 'history') {
+        uni.navigateTo({ url: '/pages/food/history' })
+        return
+      }
+      if (action === 'password') {
+        uni.navigateTo({ url: '/pages/mine/password' })
+        return
+      }
+      if (action === 'switchAccount') {
+        uni.navigateTo({ url: '/pages/login/index?force=true' })
+        return
+      }
+      if (action === 'logout') {
+        this.handleLogout()
       }
     },
     handleLogout() {
       logout()
       this.authUser = null
-      this.passwordForm = {
-        oldPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      }
-      uni.showToast({ title: '已退出登录', icon: 'success' })
+      this.todayCheckin = null
+      this.statistics = {}
+      this.publicBoard = []
+      this.foods = []
+      this.history = []
+      uni.showToast({ title: '已退出', icon: 'success' })
       setTimeout(() => {
-        uni.navigateTo({ url: `/pages/login/index?redirect=${encodeURIComponent('/pages/mine/index')}` })
+        uni.navigateTo({ url: '/pages/login/index?force=true' })
       }, 500)
+    },
+    formatDateTime(value) {
+      if (!value) {
+        return '--'
+      }
+      return value.replace('T', ' ')
     }
   }
 }
 </script>
 
 <style scoped>
-.mine-banner {
-  margin-bottom: 24rpx;
-  background:
-    radial-gradient(circle at top right, rgba(255, 244, 232, 0.24), transparent 24%),
-    linear-gradient(135deg, #4d3631, #8d573e 58%, #ddb078);
-  color: #fff;
+.mine-hero {
+  background: linear-gradient(135deg, #4d3631, #8d573e 58%, #ddb078);
+  color: #fffaf4;
 }
 
-.stage-topline {
+.hero-topline,
+.status-main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 16rpx;
-  margin-bottom: 20rpx;
 }
 
-.stage-kicker {
-  background: rgba(255, 248, 240, 0.16);
-  color: #fff5ed;
-  border-color: rgba(255, 245, 237, 0.18);
-}
-
-.stage-note {
+.hero-note {
   font-size: 22rpx;
-  line-height: 1.6;
-  color: rgba(255, 244, 235, 0.82);
+  color: rgba(255, 246, 236, 0.82);
 }
 
-.banner-title {
+.hero-title {
+  margin-top: 18rpx;
   font-size: 48rpx;
-  font-weight: 700;
   line-height: 1.24;
+  font-weight: 700;
   font-family: 'Iowan Old Style', 'Songti SC', 'Noto Serif SC', serif;
 }
 
-.banner-subtitle {
-  margin-top: 12rpx;
+.hero-subtitle {
+  margin-top: 14rpx;
   font-size: 26rpx;
-  line-height: 1.78;
-  opacity: 0.92;
+  line-height: 1.74;
+  color: rgba(255, 247, 239, 0.9);
 }
 
-.stage-strip {
+.hero-strip,
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
+}
+
+.hero-strip {
+  grid-template-columns: repeat(3, 1fr);
   margin-top: 24rpx;
 }
 
-.stage-metric {
-  padding: 18rpx 18rpx 20rpx;
+.hero-strip-item {
+  padding: 18rpx 16rpx;
   border-radius: 22rpx;
   background: rgba(255, 248, 241, 0.14);
-  border: 1rpx solid rgba(255, 245, 237, 0.16);
 }
 
-.stage-metric-label {
+.hero-strip-label {
   font-size: 20rpx;
-  letter-spacing: 2rpx;
-  color: rgba(255, 245, 237, 0.76);
+  color: rgba(255, 245, 237, 0.8);
 }
 
-.stage-metric-value {
+.hero-strip-value {
   margin-top: 10rpx;
-  font-size: 32rpx;
+  font-size: 28rpx;
   font-weight: 700;
-  color: #fff8f2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.profile-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 24rpx;
-  margin-bottom: 24rpx;
-  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(255, 247, 239, 0.95));
+.overview-card,
+.status-card,
+.activity-card,
+.management-card,
+.setting-card {
+  margin-top: 24rpx;
 }
 
-.profile-aside {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16rpx;
+.overview-title,
+.activity-title,
+.management-title,
+.setting-title,
+.status-title {
+  margin-top: 16rpx;
 }
 
-.avatar-wrap {
-  padding: 10rpx;
-  border-radius: 34rpx;
-  background: linear-gradient(135deg, rgba(242, 140, 69, 0.18), rgba(255, 216, 156, 0.22));
-}
-
-.avatar {
-  width: 108rpx;
-  height: 108rpx;
-  border-radius: 28rpx;
-  background: linear-gradient(135deg, #df6f2d, #f28c45);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 44rpx;
-  font-weight: 700;
-}
-
-.profile-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.profile-overline {
-  color: #a06d4c;
-  font-size: 20rpx;
-  font-weight: 700;
-  letter-spacing: 3rpx;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.name {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #352a24;
-  line-height: 1.25;
-  font-family: 'Iowan Old Style', 'Songti SC', 'Noto Serif SC', serif;
-}
-
-.desc,
-.setting-row {
-  color: #7c726a;
-}
-
-.desc {
-  margin-top: 12rpx;
-  line-height: 1.78;
-}
-
-.profile-tags {
-  display: flex;
-  gap: 12rpx;
-  flex-wrap: wrap;
-  margin-top: 18rpx;
-}
-
-.profile-meta-grid {
-  display: grid;
-  gap: 14rpx;
+.stats-grid {
+  grid-template-columns: repeat(2, 1fr);
   margin-top: 22rpx;
 }
 
-.meta-item {
-  padding: 18rpx 20rpx;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1rpx solid rgba(226, 210, 193, 0.6);
+.stat-card {
+  padding: 24rpx 20rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, rgba(255, 248, 240, 0.98), rgba(255, 252, 248, 0.98));
 }
 
-.meta-label {
-  color: #9c7d65;
-  font-size: 20rpx;
-  letter-spacing: 2rpx;
-  text-transform: uppercase;
+.stat-value {
+  color: #2f221d;
+  font-size: 38rpx;
+  font-weight: 700;
 }
 
-.meta-value {
-  margin-top: 8rpx;
-  color: #3d312b;
-  font-size: 26rpx;
-  font-weight: 600;
-  line-height: 1.6;
-}
-
-.account-value {
-  color: #7b4c37;
-}
-
-.settings-sheet {
-  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(248, 243, 237, 0.96));
-}
-
-.auth-card,
-.password-card,
-.settings-card {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.auth-card {
-  margin-bottom: 24rpx;
-}
-
-.password-card {
-  margin-bottom: 24rpx;
-}
-
-.sheet-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16rpx;
-}
-
-.sheet-kicker {
-  margin-bottom: 14rpx;
-}
-
-.sheet-badge {
-  flex-shrink: 0;
-  padding: 10rpx 18rpx;
-  border-radius: 999rpx;
-  background: rgba(216, 165, 90, 0.12);
+.stat-label {
+  margin-top: 10rpx;
   color: #7b533c;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 700;
 }
 
-.password-form {
-  display: grid;
-  gap: 16rpx;
+.stat-hint,
+.activity-meta,
+.management-desc,
+.setting-desc {
+  margin-top: 8rpx;
+  color: #8a7b70;
+  font-size: 22rpx;
+  line-height: 1.55;
 }
 
-.form-field {
+.status-main {
+  align-items: stretch;
+}
+
+.status-badge {
+  width: 200rpx;
+  flex-shrink: 0;
+  border-radius: 28rpx;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 18rpx;
 }
 
-.form-label {
+.status-badge.ok {
+  background: rgba(231, 246, 228, 0.96);
+  color: #477234;
+}
+
+.status-badge.late {
+  background: rgba(255, 237, 210, 0.96);
+  color: #8a5532;
+}
+
+.status-badge.idle {
+  background: rgba(255, 248, 240, 0.96);
   color: #8a6249;
-  font-size: 22rpx;
-  font-weight: 700;
-  letter-spacing: 2rpx;
 }
 
-.password-input-field {
-  height: 88rpx;
-  padding: 0 24rpx;
-  background: linear-gradient(180deg, #fffaf7, #fff3eb);
-  border-radius: 18rpx;
-  border: 1rpx solid rgba(233, 222, 211, 0.9);
-  color: #5f5148;
+.status-badge-value {
+  font-size: 32rpx;
+  font-weight: 800;
 }
 
-.auth-actions {
+.status-badge-label {
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.activity-row,
+.management-row,
+.setting-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
+  align-items: center;
+  gap: 18rpx;
 }
 
-.auth-btn {
+.activity-list,
+.management-list {
+  margin-top: 18rpx;
+}
+
+.activity-row {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid rgba(118, 86, 66, 0.1);
+}
+
+.activity-row:last-child {
+  border-bottom: 0;
+}
+
+.activity-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #d8a55a;
+  box-shadow: 0 0 0 8rpx rgba(216, 165, 90, 0.12);
+}
+
+.activity-main,
+.management-main {
   flex: 1;
   min-width: 0;
 }
 
-.secondary-btn {
-  height: 88rpx;
-  line-height: 88rpx;
-  text-align: center;
-  border-radius: 999rpx;
-  background: rgba(122, 111, 102, 0.1);
-  color: #6e6259;
-  font-weight: 600;
-  border: 1rpx solid rgba(160, 139, 120, 0.18);
+.activity-name,
+.management-name,
+.setting-name {
+  color: #30231e;
+  font-size: 28rpx;
+  font-weight: 700;
 }
 
-.section-no-margin {
-  margin-bottom: 0;
+.management-row {
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1rpx solid rgba(118, 86, 66, 0.08);
+  margin-top: 12rpx;
 }
 
-.setting-desc {
-  color: #8a7b70;
-  font-size: 24rpx;
-  line-height: 1.7;
-}
-
-.setting-picker {
-  min-height: 92rpx;
-  padding: 22rpx 24rpx;
-  background: linear-gradient(180deg, #fffaf7, #fff3eb);
-  border-radius: 18rpx;
-  color: #374151;
-  border: 1rpx solid rgba(233, 222, 211, 0.9);
+.management-icon {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
+  justify-content: center;
+  background: rgba(216, 165, 90, 0.12);
+}
+
+.management-arrow {
+  color: #b1896b;
+  font-size: 42rpx;
+}
+
+.pick-row,
+.toggle-row {
   justify-content: space-between;
-  gap: 20rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 22rpx;
+  background: linear-gradient(180deg, #fffaf7, #fff3eb);
+  border: 1rpx solid rgba(233, 222, 211, 0.9);
+  margin-top: 20rpx;
 }
 
-.picker-label {
-  color: #3d312b;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.picker-hint,
-.toggle-hint {
-  margin-top: 8rpx;
-  color: #8a7b70;
-  font-size: 22rpx;
-  line-height: 1.6;
-}
-
-.picker-value {
+.setting-value {
   flex-shrink: 0;
+  color: #8f5535;
   font-size: 34rpx;
   font-weight: 700;
-  color: #8f5535;
-  font-family: 'Iowan Old Style', 'Songti SC', 'Noto Serif SC', serif;
 }
 
-.toggle-row {
+.setting-inline-icon {
+  width: 40rpx;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
-  padding: 16rpx 0 10rpx;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.setting-card .primary-btn {
+  margin-top: 24rpx;
+}
+
+@media screen and (max-width: 380px) {
+  .hero-strip,
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-main {
+    flex-direction: column;
+  }
+
+  .status-badge {
+    width: auto;
+  }
 }
 </style>

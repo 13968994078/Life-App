@@ -2,10 +2,10 @@
   <view class="wheel-card card">
     <view class="wheel-head">
       <view>
-        <view class="wheel-title">今日吃什么</view>
-        <view class="wheel-subtitle">轻轻一转，把纠结留给转盘。</view>
+        <view class="wheel-title">本期转盘</view>
+        <view class="wheel-subtitle">把犹豫交给这一圈颜色。</view>
       </view>
-      <view class="soft-chip">{{ spinning ? '转盘进行中' : '好运加成' }}</view>
+      <view class="soft-chip">{{ spinning ? '正在转' : '今日候选' }}</view>
     </view>
 
     <view class="wheel-shell" :style="wheelShellStyle">
@@ -35,14 +35,14 @@
     </view>
 
     <view class="result-card">
-      <view class="result-label">转盘结果</view>
+      <view class="result-label">抽取结果</view>
       <view class="wheel-result">{{ resultText }}</view>
     </view>
 
     <view class="primary-btn" :class="{ disabled: spinning }" @tap="$emit('spin')">
-      {{ spinning ? '转盘旋转中...' : '开始抽取' }}
+      {{ spinning ? '转盘转着...' : '开始转' }}
     </view>
-    <view class="wheel-tip">建议先选分类，再开始抽取，结果会更贴合当下场景。</view>
+    <view class="wheel-tip">分类越贴近当下，这一转越有参考感。</view>
   </view>
 </template>
 
@@ -101,7 +101,7 @@ export default {
       return getSectorAngle(this.itemCount)
     },
     resultText() {
-      return this.result || '点击按钮开始转盘抽取'
+      return this.result || '点下面按钮，让转盘开个头'
     },
     wheelStyle() {
       return {
