@@ -4,6 +4,7 @@ Thumbs.db
 
 # Local tooling
 .m2/
+.superpowers/
 .idea/
 .vscode/
 
@@ -11,6 +12,7 @@ Thumbs.db
 backend/target/
 backend/*.log
 backend/.git.backend-backup/
+*.jar
 
 # Frontend
 frontend/node_modules/
